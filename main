@@ -1,0 +1,82 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Fri May 28 16:03:32 2021
+
+@author: Shinelon
+"""
+
+import cv2
+
+def distort_up(img, dy, a, b):
+    ratio = dy/(b-a)
+    [h,w,rgb] = img.shape
+    for rgb in range(3):
+        for j in range(a,b):
+            dx_j = j-a
+            dy_j = int(ratio*dx_j)
+            for i in range(h):
+                if i-dy_j>0:
+                    img[i-dy_j,j,rgb] = img[i,j,rgb]
+    return img
+
+def distort_down(img, dy, a, b):
+    ratio = dy/(b-a)
+    [h,w,rgb] = img.shape
+    for rgb in range(3):
+        for j in range(a,b):
+            dx_j = j-a
+            dy_j = int(ratio*dx_j)
+            for i in range(h,0,-1):
+                if i+dy_j<h:
+                    img[i+dy_j,j,rgb] = img[i,j,rgb]
+    return img
+
+def mov(img, d, a, b):
+    [h,w,rgb] = img.shape
+    for rgb in range(3):
+        for j in range(a,b):
+            if d<0:
+                for i in range(0,h):
+                    if 0<=i+d<h:
+                        img[i+d,j,rgb]=img[i,j,rgb]
+            else:
+                for i in range(h,0,-1):
+                    if 0<=i+d<h:
+                        img[i+d,j,rgb]=img[i,j,rgb]
+    return img
+
+def Xiao(img, ratio, array):
+    [a,b,c,d,e] = array
+    dy = int(ratio*(e-a)/4)
+    img = distort_up(img, dy, a, b)
+    img = mov(img, -dy, b, c)
+    img = distort_down(img, dy, b, c)
+    img = distort_up(img, dy, c, d)
+    img = mov(img, -dy, d, e)
+    img = distort_down(img, dy, d, e)
+    return img
+
+if __name__ == '__main__':
+    
+    filename = "Lena.jpg"
+    img = cv2.imread(filename)
+    ratio = 0.6 # increase the ratio to make more distortion
+    # the array stands for the horizontal ordinates of 'left eye corner', 'left eye center', 'center of mouth', 'right eye center', 'right eye corner'
+    array = [225,254,293,316,338] # Lena
+    img = Xiao(img, ratio, array)
+    
+    cv2.imwrite('funny_face.png', img)
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
